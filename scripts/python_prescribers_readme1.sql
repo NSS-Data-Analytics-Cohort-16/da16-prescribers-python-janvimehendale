@@ -29,11 +29,22 @@ SELECT *
 FROM zip_fips
 LIMIT 1;
 
+SELECT county,
+	fipscounty,
+	population
+FROM population p
+LEFT JOIN fips_county
+USING(fipscounty)
+ORDER BY population DESC;
+
+
 SELECT --p.drug_name, 
 	f.county,
 	-- d.opioid_drug_flag,
 	--  f.state,
-	COUNT(p.drug_name) AS prescription_count
+	COUNT(p.drug_name) AS prescription_count,
+	pop.population,
+	--(COUNT(p.drug_name) AS prescription_count) * 100/ population) AS prescribed_percentage
 	FROM drug d
 LEFT JOIN prescription p
 ON p.drug_name = d.drug_name
@@ -44,10 +55,13 @@ ON z.zip = prescriber.nppes_provider_zip5
 LEFT JOIN fips_county f
 ON f.state = prescriber.nppes_provider_state
 AND f.fipscounty = z.fipscounty 
+LEFT JOIN population pop
+ON pop.fipscounty = f.fipscounty
 WHERE d.opioid_drug_flag = 'Y'
 AND f.state = 'TN'
 GROUP BY --p.drug_name,
 --	d.opioid_drug_flag,
 --	f.state,
-	f.county
+	f.county,
+	pop.population
 ORDER BY prescription_count DESC;
